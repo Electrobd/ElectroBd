@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ElectroBD — Electronics Shop</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,"Noto Sans Bengali",sans-serif;background:#f5f7fb;color:#172033}
+header{position:sticky;top:0;z-index:10;background:#111827;color:white;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px #0002}
+.logo{font-size:22px;font-weight:800}.cartBtn{border:0;background:#fff;color:#111827;padding:10px 14px;border-radius:12px;font-weight:700}
+.hero{padding:28px 18px;background:linear-gradient(135deg,#111827,#2563eb);color:#fff}.hero h1{margin:0 0 8px;font-size:30px}.hero p{margin:0;opacity:.9}
+.container{max-width:1100px;margin:auto;padding:20px 15px}.products{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.card{background:#fff;border-radius:18px;padding:12px;box-shadow:0 4px 18px #1111;overflow:hidden}.pic{height:145px;border-radius:13px;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:58px}.card h3{font-size:16px;margin:11px 0 6px}.price{font-weight:800;font-size:18px}.muted{color:#6b7280;font-size:13px}.add{width:100%;border:0;background:#2563eb;color:white;padding:11px;border-radius:11px;margin-top:10px;font-weight:700}
+.drawer{position:fixed;inset:0;background:#0007;z-index:30;display:none}.drawer.show{display:block}.panel{position:absolute;right:0;top:0;height:100%;width:min(430px,100%);background:#fff;padding:18px;overflow:auto}
+.row{display:flex;gap:10px;align-items:center;border-bottom:1px solid #eee;padding:12px 0}.thumb{width:50px;height:50px;background:#eef2ff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:25px}.grow{flex:1}.qty button{border:0;background:#e5e7eb;width:28px;height:28px;border-radius:8px}.close{float:right;border:0;background:#eee;border-radius:8px;padding:7px 10px}
+.total{display:flex;justify-content:space-between;font-size:19px;font-weight:800;padding:18px 0}.checkout{border:0;width:100%;padding:13px;border-radius:12px;background:#16a34a;color:#fff;font-weight:800;font-size:16px}
+.modal{position:fixed;inset:0;background:#0008;z-index:50;display:none;align-items:center;justify-content:center;padding:15px}.modal.show{display:flex}.box{background:#fff;border-radius:18px;width:min(480px,100%);padding:20px}.box input,.box textarea{width:100%;padding:12px;margin:7px 0;border:1px solid #d1d5db;border-radius:10px;font-size:15px}.submit{width:100%;padding:13px;border:0;border-radius:11px;background:#2563eb;color:#fff;font-weight:800;margin-top:8px}
+.success{text-align:center;padding:25px}.success .icon{font-size:60px}
+.detailPic{height:190px;border-radius:16px;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:80px;margin-bottom:15px}
+.detailBox{background:#f8fafc;border-radius:12px;padding:13px;margin:12px 0;line-height:1.55}
+@media(min-width:700px){.products{grid-template-columns:repeat(4,1fr)}.pic{height:170px}}
+.tools{display:flex;gap:10px;margin:12px 0}.tools input,.tools select{flex:1;padding:12px;border:1px solid #d1d5db;border-radius:10px;background:#fff}.pic img{width:100%;height:100%;object-fit:cover;border-radius:13px}.detailPic img{width:100%;height:100%;object-fit:cover;border-radius:16px}
+.whatsapp{position:fixed;right:16px;bottom:18px;z-index:20;background:#16a34a;color:#fff;padding:13px 16px;border-radius:999px;text-decoration:none;font-weight:800;box-shadow:0 5px 18px #0003}
+@media(max-width:520px){.tools{flex-direction:column}}
+</style>
+</head>
+<body>
+<header><div class="logo">⚡ ElectroBD</div><button class="cartBtn" onclick="openCart()">🛒 Cart <span id="count">0</span></button></header>
+<section class="hero"><div class="container"><h1>Smart Electronics, Easy Shopping</h1><p>ভালো দামে প্রয়োজনীয় Electronics products এক জায়গায়।</p></div></section>
+<main class="container"><h2>Featured Products</h2>
+<div class="tools"><input id="search" placeholder="🔎 Search products..." oninput="renderProducts()"><select id="category" onchange="renderProducts()"><option value="All">All Categories</option></select></div>
+<div id="products" class="products"></div>
+<section class="help" style="margin-top:28px;background:#fff;border-radius:18px;padding:20px;box-shadow:0 4px 18px #1111">
+<h2>📞 Help Line</h2><p>Product, delivery বা order নিয়ে কোনো সমস্যা হলে আমাদের সাথে যোগাযোগ করুন।</p>
+<p><b>📱 Phone:</b> 01XXXXXXXXX</p><p><b>💬 WhatsApp:</b> 01XXXXXXXXX</p><p><b>🕘 Support Time:</b> সকাল ৯টা – রাত ১০টা</p>
+</section>
+<section class="help" style="margin-top:15px;background:#fff;border-radius:18px;padding:20px;box-shadow:0 4px 18px #1111">
+<h2>📦 Track Your Order</h2><p class="muted">Order ID দিয়ে আপনার order status জানতে পারবেন।</p>
+<input id="trackId" placeholder="যেমন ORD-123456789" style="width:100%;padding:12px;border:1px solid #d1d5db;border-radius:10px">
+<button class="add" onclick="trackOrder()">Track Order</button><p id="trackResult"></p>
+</section></main>
+
+<div id="drawer" class="drawer" onclick="if(event.target===this)closeCart()"><div class="panel">
+<button class="close" onclick="closeCart()">✕</button><h2>🛒 Your Cart</h2><div id="cart"></div><div class="total"><span>Total</span><span id="total">৳0</span></div><button class="checkout" onclick="checkout()">Order Now</button>
+</div></div>
+
+<div id="productModal" class="modal" onclick="if(event.target===this)closeProduct()"><div class="box">
+<button class="close" onclick="closeProduct()">✕</button>
+<div id="productDetails"></div>
+<p class="muted">* Warranty/return terms can be changed by the shop owner.</p>
+</div></div>
+
+<div id="modal" class="modal"><div class="box">
+<button class="close" onclick="closeCheckout()">✕</button><h2>📦 Checkout</h2>
+<p class="muted">আপনার তথ্য দিন। Order submit হলে দোকানের Order System-এ চলে যাবে।</p>
+<form onsubmit="submitOrder(event)">
+<input id="name" placeholder="আপনার নাম" required>
+<input id="phone" placeholder="মোবাইল নম্বর" required>
+<textarea id="address" rows="3" placeholder="সম্পূর্ণ ঠিকানা" required></textarea>
+<select id="payment" style="width:100%;padding:12px;border:1px solid #d1d5db;border-radius:10px;margin:7px 0"><option>Cash on Delivery</option><option>Online Payment (ম্যানুয়ালি যোগাযোগ)</option></select>
+<button class="submit">Confirm Order</button>
+</form><p id="status" class="muted"></p>
+</div></div>
+<script>
+const API_URL="PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
+const products=[
+{id:1,name:"Wireless Earbuds",price:1290,icon:"🎧",cat:"Audio",img:"https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?auto=format&fit=crop&w=800&q=80",desc:"Bluetooth earbuds"},
+{id:2,name:"Smart Watch",price:1890,icon:"⌚",cat:"Wearables",img:"https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",desc:"Fitness smart watch"},
+{id:3,name:"Power Bank 10000mAh",price:990,icon:"🔋",cat:"Power",img:"https://images.unsplash.com/photo-1609592424859-8c1b5b7d5d9d?auto=format&fit=crop&w=800&q=80",desc:"Fast charging"},
+{id:4,name:"Bluetooth Speaker",price:1490,icon:"🔊",cat:"Audio",img:"https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=800&q=80",desc:"Portable speaker"},
+{id:5,name:"USB-C Charger",price:690,icon:"🔌",cat:"Power",img:"https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=800&q=80",desc:"Fast charger"},
+{id:6,name:"Gaming Mouse",price:850,icon:"🖱️",cat:"Gaming",img:"https://images.unsplash.com/photo-1527814050087-3793815479db?auto=format&fit=crop&w=800&q=80",desc:"RGB gaming mouse"},
+{id:7,name:"Mechanical Keyboard",price:2250,icon:"⌨️",cat:"Gaming",img:"https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=800&q=80",desc:"Gaming keyboard"},
+{id:8,name:"USB-C Cable",price:350,icon:"🔗",cat:"Accessories",img:"https://images.unsplash.com/photo-1625842268584-8f3296236761?auto=format&fit=crop&w=800&q=80",desc:"Fast data cable"},
+{id:9,name:"LED Desk Lamp",price:790,icon:"💡",cat:"Home",img:"https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=800&q=80",desc:"Adjustable LED lamp"},
+{id:10,name:"Mini Tripod",price:590,icon:"📷",cat:"Accessories",img:"https://images.unsplash.com/photo-1495707902641-75cac588d2e9?auto=format&fit=crop&w=800&q=80",desc:"Phone tripod"},
+{id:11,name:"Phone Stand",price:390,icon:"📱",cat:"Accessories",img:"https://images.unsplash.com/photo-1601524909162-ae8725290836?auto=format&fit=crop&w=800&q=80",desc:"Desktop phone stand"},
+{id:12,name:"Memory Card 128GB",price:1190,icon:"💾",cat:"Storage",img:"https://images.unsplash.com/photo-1592840496694-26d035b52b48?auto=format&fit=crop&w=800&q=80",desc:"High-speed storage"}
+];
+let cart=JSON.parse(localStorage.getItem("electro_cart")||"[]");
+const money=n=>"৳"+n.toLocaleString("en-US");
+function save(){localStorage.setItem("electro_cart",JSON.stringify(cart));renderCart();updateCount()}
+function updateCount(){document.getElementById("count").textContent=cart.reduce((a,b)=>a+b.qty,0)}
+function trackOrder(){
+ const id=document.getElementById("trackId").value.trim();
+ document.getElementById("trackResult").innerHTML=id?`🔎 Order <b>${id}</b> — <b>Pending</b><br><span class="muted">Live tracking চালু করতে backend-এ order lookup endpoint লাগবে।</span>`:"Order ID দিন।";
+}
+function renderProducts(){
+ const q=(document.getElementById("search")?.value||"").toLowerCase();
+ const cat=document.getElementById("category")?.value||"All";
+ const list=products.filter(p=>(cat==="All"||p.cat===cat)&&(p.name.toLowerCase().includes(q)||p.desc.toLowerCase().includes(q)));
+ document.getElementById("products").innerHTML=list.map(p=>`<div class="card" onclick="openProduct(${p.id})"><div class="pic"><img src="${p.img}" alt="${p.name}"></div><h3>${p.name}</h3><div class="muted">${p.cat} • ${p.desc}</div><p class="price">${money(p.price)}</p><button class="add" onclick="event.stopPropagation();buyNow(${p.id})">Buy Now</button></div>`).join("")||'<p class="muted">No products found.</p>';
+}
+function buyNow(id){cart=[{id,qty:1}];save();checkout()}
+function openProduct(id){
+ const p=products.find(x=>x.id===id);
+ document.getElementById("productModal").classList.add("show");
+ document.getElementById("productDetails").innerHTML=`
+ <div class="detailPic"><img src="${p.img}" alt="${p.name}"></div>
+ <h2>${p.name}</h2>
+ <p class="muted">${p.desc}</p>
+ <h2>${money(p.price)}</h2>
+ <div class="detailBox"><b>Product Details</b><p>✓ Premium quality electronics<br>✓ Suitable for everyday use<br>✓ Fast and reliable performance<br>✓ Easy to use<br>✓ 7-day checking warranty*</p></div>
+ <div class="detailBox"><b>Delivery</b><p>📦 Home delivery available<br>🚚 Delivery charge may vary by location<br>💵 Cash on Delivery available</p></div>
+ <button class="add" onclick="add(${p.id});closeProduct()">🛒 Add to Cart</button><button class="add" style="background:#16a34a" onclick="buyNow(${p.id});closeProduct()">⚡ Buy Now</button>`;
+}
+function closeProduct(){document.getElementById("productModal").classList.remove("show")}
+function add(id){let x=cart.find(i=>i.id===id);x?x.qty++:cart.push({id,qty:1});save();openCart()}
+function renderCart(){let el=document.getElementById("cart");if(!cart.length){el.innerHTML='<p class="muted">Cart is empty.</p>';document.getElementById("total").textContent="৳0";return}
+let total=0;el.innerHTML=cart.map(i=>{let p=products.find(x=>x.id===i.id),sub=p.price*i.qty;total+=sub;return `<div class="row"><div class="thumb">${p.icon}</div><div class="grow"><b>${p.name}</b><div>${money(p.price)} × ${i.qty}</div></div><div class="qty"><button onclick="change(${p.id},-1)">−</button> ${i.qty} <button onclick="change(${p.id},1)">+</button></div></div>`}).join("");document.getElementById("total").textContent=money(total)}
+function change(id,d){let x=cart.find(i=>i.id===id);if(!x)return;x.qty+=d;if(x.qty<=0)cart=cart.filter(i=>i.id!==id);save()}
+function openCart(){document.getElementById("drawer").classList.add("show");renderCart()}
+function closeCart(){document.getElementById("drawer").classList.remove("show")}
+function checkout(){if(!cart.length)return alert("Cart is empty!");document.getElementById("modal").classList.add("show")}
+function closeCheckout(){document.getElementById("modal").classList.remove("show")}
+async function submitOrder(e){
+e.preventDefault();let order={customer:{name:name.value,phone:phone.value,address:address.value,payment:payment.value},items:cart.map(i=>{let p=products.find(x=>x.id===i.id);return{name:p.name,price:p.price,qty:i.qty}}),total:cart.reduce((s,i)=>s+products.find(p=>p.id===i.id).price*i.qty,0),createdAt:new Date().toISOString()};
+let st=document.getElementById("status");st.textContent="Order পাঠানো হচ্ছে...";
+if(API_URL.startsWith("PASTE_")){st.textContent="Demo mode: Google Apps Script URL বসানো হয়নি।";return}
+try{let r=await fetch(API_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(order)});cart=[];save();document.querySelector(".box").innerHTML='<div class="success"><div class="icon">✅</div><h2>Order Received!</h2><p>আপনার order সফলভাবে submit হয়েছে।</p><button class="submit" onclick="closeCheckout()">Done</button></div>'}catch(err){st.textContent="Order পাঠানো যায়নি। Internet/API URL check করুন।"}
+}
+const catEl=document.getElementById("category");
+[...new Set(products.map(p=>p.cat))].forEach(c=>catEl.insertAdjacentHTML("beforeend",`<option>${c}</option>`));
+renderProducts();renderCart();updateCount();
+</script>
+<a class="whatsapp" href="https://wa.me/8801XXXXXXXXX?text=Hello%20ElectroBD%2C%20I%20need%20help." target="_blank">💬 WhatsApp Help</a></body>
+</html>
